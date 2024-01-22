@@ -1,0 +1,5 @@
+ibexa_connect:
+  scenario_block:
+    block_templates:
+      orders:
+        template: '@ibexadesign/blocks/connect/orders.html.twig'

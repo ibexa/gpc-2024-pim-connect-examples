@@ -44,5 +44,8 @@ services:
         arguments:
             $domainMappers: !tagged_iterator 'ibexa.product_catalog.product_price.inheritance.domain_mapper'
 
+    App\Subscriber\CreateOrderSubscriber:
+        tags: [kernel.event.subscriber]
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
