@@ -1,0 +1,117 @@
+{% import '@ibexadesign/cart/universals/macros.html.twig' as html %}
+
+{% extends '@ibexadesign/checkout/layout.html.twig' %}
+
+{% trans_default_domain 'ibexa_checkout' %}
+
+{% block content %}
+    <div class="ibexa-store-container">
+    {% include '@ibexadesign/checkout/component/quick_summary.html.twig' with { entries_count : 1} %}
+
+    <h3>Product availability check</h3>
+    <h5>All cart products were verified with our warehouse to ensure they are available.</h5>
+
+    <div class="checkout-availability">
+    {% block items %}
+        {% for item in entries %}
+            {% set product = item.entry.getProduct() %}
+            {% set entry = item.entry %}
+
+            {% block item %}
+                <div class="item">
+                {% block item_thumbnail %}
+                    {% if product.thumbnail is defined %}
+                        {% set img_attr = {
+                            src: product.thumbnail.resource,
+                            alt: product.getName(),
+                        }|merge(img_attr|default({})) %}
+
+                        <div class="product-thumbnail"><img {{ html.attributes(img_attr) }} /></div>
+                    {% endif %}
+                {% endblock %}
+
+                {% block item_code %}
+                    <div class="product-code">
+                        {{ 'ibexa_checkout.ui.data_summary.items.code'|trans({'%code%': product.getCode()})|desc('Code %code%') }}
+                    </div>
+                {% endblock %}
+
+                {% block item_name %}
+                    <div class="product-name">
+                        {{ product.getName() }}
+                    </div>
+                {% endblock %}
+
+                {% block item_count %}
+                    <div  class="product-count">
+                        <label>{{ 'ibexa_checkout.ui.data_summary.items'|trans|desc('Items') }}:</label> <b>{{ entry.getQuantity() -}}</b>
+                    </div>
+                {% endblock %}
+
+                {% block item_on_stock %}
+                    <div class="product-stock">
+                        <label>{{ 'ibexa_checkout.ui.data_summary.on_stock'|trans|desc('Items on stock') }}:</label> <b>{{ item.availability.stock -}}</b>
+                    </div>
+                {% endblock %}
+
+                {% block item_available %}
+                    <div class="product-stock-img">
+                        {% if item.availability.is_available %}
+                            <img style="max-width: 75px;" src="{{ asset('/assets/storefront/images/check_yes.png') }}"/>
+                        {% else %}
+                            <img style="max-width: 75px;" src="{{ asset('/assets/storefront/images/check_no.png') }}"/>
+                        {% endif %}
+                    </div>
+                {% endblock %}
+                </div>
+            {% endblock %}
+            <br/>
+        {% endfor %}
+    {% endblock %}
+    </div>
+
+    {% set unavailable = false %}
+    {% for item in entries %}
+        {% if item.availability.is_available == false %}
+            {% set unavailable = true %}
+        {% endif %}
+    {% endfor %}
+
+    {% if unavailable %}
+        <div class="red">
+            <h4>Product validation exception</h4>
+            <h6>Some of the products are currently unavailable in our warehouse, please go back to cart and modify amount or remove products to proceed checkout.</h6>
+        </div>
+
+        {% block edit_cart_row %}
+            {% set link_attr = link_attr|default({})|merge({
+                href: path('ibexa.cart.view', {
+                    identifier: checkout.getCartIdentifier()
+                }),
+            }) %}
+            <a {{ html.attributes(link_attr)}}>
+                {{ 'ibexa_checkout.ui.quick_summary.edit_cart'|trans|desc('Edit cart') }}
+            </a>
+        {% endblock %}
+
+    {% else %}
+        {{ form_start(form) }}
+        {% include '@ibexadesign/checkout/component/actions.html.twig' with {
+            label: 'ibexa_checkout.ui.select_address.submit'|trans|desc('Go to Billing & shipping address'),
+            href: ibexa_checkout_step_path(checkout, 'select_address'),
+        } %}
+        {{ form_end(form) }}
+    {% endif %}
+
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('checkout') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('checkout') }}
+{% endblock %}
