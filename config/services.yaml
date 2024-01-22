@@ -30,5 +30,19 @@ services:
         arguments:
             $gateway: '@App\ProductCatalog\Connect\Persistence\ProductAvailability\Gateway\Connect'
 
+    App\ProductCatalog\Connect\ProductPriceServiceDecorator:
+        decorates: Ibexa\Contracts\ProductCatalog\ProductPriceServiceInterface
+        arguments:
+            $innerService: '@.inner'
+            $handler: '@App\ProductCatalog\Connect\Persistence\ProductPrice\Handler'
+
+    App\ProductCatalog\Connect\Persistence\ProductPrice\Handler:
+        arguments:
+            $gateway: '@App\ProductCatalog\Connect\Persistence\ProductPrice\Gateway\Connect'
+
+    App\ProductCatalog\Connect\Persistence\ProductPrice\Inheritance\DomainObjectBuilder:
+        arguments:
+            $domainMappers: !tagged_iterator 'ibexa.product_catalog.product_price.inheritance.domain_mapper'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

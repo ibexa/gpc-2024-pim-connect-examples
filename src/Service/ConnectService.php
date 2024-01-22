@@ -43,6 +43,11 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
         $this->serializer = new Serializer($normalizers, $encoders);
     }
 
+    public function isAlive(): bool
+    {
+        return true; //@TODO
+    }
+
     public function checkProductAvailabilityByCode(string $productCode, int $amount): array
     {
         $payload = ['product_code' => $productCode, 'amount' => $amount];
@@ -58,6 +63,27 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
         ];
 
         $response = $this->handleApiRequest(Request::METHOD_POST, $options);
+        $data = json_decode($response->getContent(), true);
+
+        return $data;
+    }
+
+    public function handleRequest(string $method, array $payload, array $additionalHeaders): array
+    {
+        $jsonContent = $this->serializer->serialize($payload, JsonEncoder::FORMAT);
+
+        $options = [
+            'headers' => array_merge(
+                [
+                    'User-Agent' => 'Ibexa DXP',
+                    'Content-Type' => 'application/json',
+                ],
+                $additionalHeaders
+            ),
+            'body' => $jsonContent,
+        ];
+
+        $response = $this->handleApiRequest($method, $options);
         $data = json_decode($response->getContent(), true);
 
         return $data;
